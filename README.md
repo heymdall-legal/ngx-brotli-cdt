@@ -1,4 +1,7 @@
-# ngx_brotli
+# ngx_brotli-cdt
+
+This is a fork of the original ngx_brotli module that brings in support for [compression dictionary transport](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Compression_dictionary_transport) protocol.
+Read more in [Compression dictionary transport](#compression-dictionary-transport) section.
 
 Brotli is a generic-purpose lossless compression algorithm that compresses data
 using a combination of a modern variant of the LZ77 algorithm, Huffman coding
@@ -26,6 +29,7 @@ ngx_brotli is a set of two nginx modules:
   - [`brotli_min_length`](#brotli_min_length)
 - [Variables](#variables)
   - [`$brotli_ratio`](#brotli_ratio)
+- [Compression dictionary transport](#compression-dictionary-transport)
 - [Sample configuration](#sample-configuration)
 - [Contributing](#contributing)
 - [License](#license)
@@ -146,6 +150,34 @@ The length is determined only from the `Content-Length` response header field.
 
 Achieved compression ratio, computed as the ratio between the original
 and compressed response sizes.
+
+## Compression dictionary transport
+
+This module currently supports pre-compressed files only and makes several assumptions about file structure and naming conventions:
+
+**File Naming Convention**
+Static files must follow this pattern: `{static_name}.{dynamic_part}.{ext}`
+- Example: `my-file.bde48fa.js`
+- The `{dynamic_part}` serves as the dictionary ID
+- **Files that don't follow this convention will still be served normally** but without compression-dictionary transport headers (they may still use standard brotli or gzip compression)
+
+**Pre-compressed Files**
+- Only pre-compressed `.dcb` files are served (no runtime compression)
+- Compressed files must be stored alongside the original file
+- Compressed file naming: `{static_name}.{dynamic_part}.{dictionary_id}.dcb`
+
+**Dictionary Matching**
+The `Use-As-Dictionary` header's `match` directive follows this format:
+`{prefix}/{pathname}/{static_name}.*.{ext}`
+
+Where:
+- `{prefix}` = content from the first `x-forwarded-for` header (may be empty)
+- `{pathname}` = request path
+- `{static_name}` and `{ext}` = from the original filename
+
+**Customization**
+If these assumptions don't fit your use case, you can either fork this repository or submit a pull request with configurable behavior options.
+
 
 ## Sample configuration
 
