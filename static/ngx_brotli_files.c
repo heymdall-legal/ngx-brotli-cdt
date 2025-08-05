@@ -101,7 +101,8 @@ ngx_int_t validate_dcb_file_sign(ngx_http_request_t* req, ngx_str_t* path,
  * @return NGX_OK if file is served successfully, error code otherwise
  */
 ngx_int_t serve_static_file(ngx_http_request_t* req, ngx_str_t* path,
-                                   const char* encoding, size_t encoding_len) {
+                                   const char* encoding, size_t encoding_len,
+                                   ngx_flag_t auto_dictionary) {
   ngx_int_t rc;
   ngx_log_t* log;
   ngx_http_core_loc_conf_t* location_cfg;
@@ -204,9 +205,11 @@ ngx_int_t serve_static_file(ngx_http_request_t* req, ngx_str_t* path,
 
   req->headers_out.content_encoding = content_encoding_entry;
 
-  /* Set "Use-As-Dictionary" header if applicable */
-  rc = set_use_as_dictionary_header(req);
-  if (rc != NGX_OK) return NGX_HTTP_INTERNAL_SERVER_ERROR;
+  /* Set "Use-As-Dictionary" header if applicable and enabled */
+  if (auto_dictionary) {
+    rc = set_use_as_dictionary_header(req);
+    if (rc != NGX_OK) return NGX_HTTP_INTERNAL_SERVER_ERROR;
+  }
 
   /* Setup response body. */
   buf = ngx_pcalloc(req->pool, sizeof(ngx_buf_t));
@@ -245,7 +248,8 @@ ngx_int_t serve_static_file(ngx_http_request_t* req, ngx_str_t* path,
  * @return NGX_OK if file is served successfully, NGX_DECLINED otherwise
  */
 ngx_int_t serve_dcb_file(ngx_http_request_t* req, ngx_str_t* original_path,
-                                ngx_str_t* file_prefix, ngx_str_t* cache_id) {
+                                ngx_str_t* file_prefix, ngx_str_t* cache_id,
+                                ngx_flag_t auto_dictionary) {
   u_char* last;
   ngx_str_t path;
   size_t root;
@@ -312,5 +316,5 @@ ngx_int_t serve_dcb_file(ngx_http_request_t* req, ngx_str_t* original_path,
   ngx_str_set(&vary_header->value, "accept-encoding, available-dictionary");
 
   /* Use the common function to serve the file */
-  return serve_static_file(req, &path, kDcbEncoding, kDcbEncodingLen);
+  return serve_static_file(req, &path, kDcbEncoding, kDcbEncodingLen, auto_dictionary);
 }

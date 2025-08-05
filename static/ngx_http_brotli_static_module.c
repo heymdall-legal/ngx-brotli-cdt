@@ -20,6 +20,7 @@
 
 typedef struct {
   ngx_uint_t enable;
+  ngx_flag_t auto_dictionary;
 } configuration_t;
 
 static ngx_conf_enum_t kBrotliStaticEnum[] = {
@@ -47,6 +48,11 @@ static ngx_command_t kCommands[] = {
          NGX_CONF_TAKE1,
      ngx_conf_set_enum_slot, NGX_HTTP_LOC_CONF_OFFSET,
      offsetof(configuration_t, enable), &kBrotliStaticEnum},
+    {ngx_string("brotli_auto_dictionary"),
+     NGX_HTTP_MAIN_CONF | NGX_HTTP_SRV_CONF | NGX_HTTP_LOC_CONF |
+         NGX_CONF_FLAG,
+     ngx_conf_set_flag_slot, NGX_HTTP_LOC_CONF_OFFSET,
+     offsetof(configuration_t, auto_dictionary), NULL},
     ngx_null_command};
 
 static ngx_http_module_t kModuleContext = {
@@ -134,7 +140,7 @@ static ngx_int_t handler(ngx_http_request_t* req) {
     path.len += kSuffixLen;
 
     /* Try to serve the DCB file */
-    rc = serve_dcb_file(req, &path, &file_prefix, &cache_id);
+    rc = serve_dcb_file(req, &path, &file_prefix, &cache_id, cfg->auto_dictionary);
     if (rc != NGX_DECLINED) {
       return rc;
     }
@@ -152,7 +158,7 @@ static ngx_int_t handler(ngx_http_request_t* req) {
   path.len += kSuffixLen;
 
   /* Use the common function to serve the file */
-  return serve_static_file(req, &path, kEncoding, kEncodingLen);
+  return serve_static_file(req, &path, kEncoding, kEncodingLen, cfg->auto_dictionary);
 }
 
 static void* create_conf(ngx_conf_t* root_cfg) {
@@ -160,6 +166,7 @@ static void* create_conf(ngx_conf_t* root_cfg) {
   cfg = ngx_palloc(root_cfg->pool, sizeof(configuration_t));
   if (cfg == NULL) return NULL;
   cfg->enable = NGX_CONF_UNSET_UINT;
+  cfg->auto_dictionary = NGX_CONF_UNSET;
   return cfg;
 }
 
@@ -168,6 +175,7 @@ static char* merge_conf(ngx_conf_t* root_cfg, void* parent, void* child) {
   configuration_t* cfg = child;
   ngx_conf_merge_uint_value(cfg->enable, prev->enable,
                             NGX_HTTP_BROTLI_STATIC_OFF);
+  ngx_conf_merge_value(cfg->auto_dictionary, prev->auto_dictionary, 1);
   return NGX_CONF_OK;
 }
 

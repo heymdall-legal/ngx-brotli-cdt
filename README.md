@@ -21,6 +21,7 @@ ngx_brotli is a set of two nginx modules:
 - [Installation](#installation)
 - [Configuration directives](#configuration-directives)
   - [`brotli_static`](#brotli_static)
+  - [`brotli_auto_dictionary`](#brotli_auto_dictionary)
   - [`brotli`](#brotli)
   - [`brotli_types`](#brotli_types)
   - [`brotli_buffers`](#brotli_buffers)
@@ -91,6 +92,14 @@ Enables or disables checking of the existence of pre-compressed files with`.br`
 extension. With the `always` value, pre-compressed file is used in all cases,
 without checking if the client supports it.
 
+### `brotli_auto_dictionary`
+
+- **syntax**: `brotli_auto_dictionary on|off`
+- **default**: `on`
+- **context**: `http`, `server`, `location`
+
+Controls whether the `Use-As-Dictionary` header is automatically set when serving static brotli files. When enabled, the module will set appropriate compression dictionary transport headers for eligible files. When disabled, files are served without dictionary transport headers but still use standard brotli compression.
+
 ### `brotli`
 
 - **syntax**: `brotli on|off`
@@ -153,7 +162,7 @@ and compressed response sizes.
 
 ## Compression dictionary transport
 
-This module currently supports pre-compressed files only and makes several assumptions about file structure and naming conventions:
+This module currently supports pre-compressed files only and makes several assumptions about file structure and naming conventions. The compression dictionary transport functionality can be controlled via the [`brotli_auto_dictionary`](#brotli_auto_dictionary) configuration directive.
 
 **File Naming Convention**
 Static files must follow this pattern: `{static_name}.{dynamic_part}.{ext}`
