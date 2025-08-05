@@ -175,7 +175,7 @@ static char* merge_conf(ngx_conf_t* root_cfg, void* parent, void* child) {
   configuration_t* cfg = child;
   ngx_conf_merge_uint_value(cfg->enable, prev->enable,
                             NGX_HTTP_BROTLI_STATIC_OFF);
-  ngx_conf_merge_value(cfg->auto_dictionary, prev->auto_dictionary, 1);
+  ngx_conf_merge_value(cfg->auto_dictionary, prev->auto_dictionary, 0);
   return NGX_CONF_OK;
 }
 
