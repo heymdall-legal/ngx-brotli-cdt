@@ -137,8 +137,6 @@ ngx_int_t set_use_as_dictionary_header(ngx_http_request_t* req) {
   header_len += 3; // ".*."
   header_len += ext.len;
   header_len += 6; // "\",id=\""
-  header_len += basename.len;
-  header_len += 1; // "."
   header_len += fileId.len;
   header_len += 1; // "\""
 
@@ -148,12 +146,11 @@ ngx_int_t set_use_as_dictionary_header(ngx_http_request_t* req) {
 
   // Format header value using ngx_snprintf
   ngx_snprintf(header_value, header_len,
-              "match=\"%V/%V/%V.*.%V\",id=\"%V.%V\"",
+              "match=\"%V/%V/%V.*.%V\",id=\"%V\"",
               &prefix_to_use,
               &pathname,
               &basename,
               &ext,
-              &basename,
               &fileId);
 
   // Create and set the header
@@ -256,21 +253,17 @@ ngx_int_t check_dcb_accept_encoding(ngx_http_request_t* req) {
 }
 
 /**
- * Parses the dictionary-id header and extracts file_prefix and cache_id.
+ * Parses the dictionary-id header and extracts cache_id.
  *
- * This function extracts the file prefix and cache ID from a dictionary-id header
- * that follows the format "file_prefix.cache_id".
+ * Trims whitespaces and quotes from header
  *
  * @param req The HTTP request object
- * @param file_prefix Output parameter to store the file prefix
  * @param cache_id Output parameter to store the cache ID
  * @return NGX_OK on success, NGX_DECLINED if header is not found or malformed
  */
-ngx_int_t parse_dictionary_id(ngx_http_request_t* req, ngx_str_t* file_prefix,
-                                     ngx_str_t* cache_id) {
+ngx_int_t parse_dictionary_id(ngx_http_request_t* req, ngx_str_t* cache_id) {
   ngx_table_elt_t* dictionary_id_entry;
   ngx_str_t* dictionary_id;
-  u_char* dot;
   u_char* start;
   u_char* end;
 
@@ -303,17 +296,8 @@ ngx_int_t parse_dictionary_id(ngx_http_request_t* req, ngx_str_t* file_prefix,
     end--;
   }
 
-  /* Find the dot separator within the trimmed value */
-  dot = ngx_brotli_find_first_char(start, end - start, '.');
-  if (dot == NULL) return NGX_DECLINED;
-
-  /* Set file_prefix to the part before the dot */
-  file_prefix->data = start;
-  file_prefix->len = dot - start;
-
-  /* Set cache_id to the part after the dot */
-  cache_id->data = dot + 1;
-  cache_id->len = end - cache_id->data;
+  cache_id->data = start;
+  cache_id->len = end - start;
 
   return NGX_OK;
 }

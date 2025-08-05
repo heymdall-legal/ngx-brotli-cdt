@@ -106,7 +106,6 @@ static ngx_int_t handler(ngx_http_request_t* req) {
   u_char* last;
   ngx_str_t path;
   size_t root;
-  ngx_str_t file_prefix;
   ngx_str_t cache_id;
 
   /* Only GET and HEAD requensts are supported. */
@@ -130,7 +129,7 @@ static ngx_int_t handler(ngx_http_request_t* req) {
 
   /* Check if DCB is in accept-encoding and dictionary-id is present */
   if (check_dcb_accept_encoding(req) == NGX_OK &&
-        parse_dictionary_id(req, &file_prefix, &cache_id) == NGX_OK) {
+        parse_dictionary_id(req, &cache_id) == NGX_OK) {
 
     /* Get path for the original file (without .br suffix) */
     last = ngx_http_map_uri_to_path(req, &path, &root, kSuffixLen);
@@ -140,7 +139,7 @@ static ngx_int_t handler(ngx_http_request_t* req) {
     path.len += kSuffixLen;
 
     /* Try to serve the DCB file */
-    rc = serve_dcb_file(req, &path, &file_prefix, &cache_id, cfg->auto_dictionary);
+    rc = serve_dcb_file(req, &path, &cache_id, cfg->auto_dictionary);
     if (rc != NGX_DECLINED) {
       return rc;
     }

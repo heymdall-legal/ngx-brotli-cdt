@@ -243,12 +243,11 @@ ngx_int_t serve_static_file(ngx_http_request_t* req, ngx_str_t* path,
  *
  * @param req The HTTP request object
  * @param original_path The original path of the requested file
- * @param file_prefix Prefix to check in the filename
  * @param cache_id Cache identifier to append to the filename
  * @return NGX_OK if file is served successfully, NGX_DECLINED otherwise
  */
 ngx_int_t serve_dcb_file(ngx_http_request_t* req, ngx_str_t* original_path,
-                                ngx_str_t* file_prefix, ngx_str_t* cache_id,
+                                ngx_str_t* cache_id,
                                 ngx_flag_t auto_dictionary) {
   u_char* last;
   ngx_str_t path;
@@ -279,12 +278,6 @@ ngx_int_t serve_dcb_file(ngx_http_request_t* req, ngx_str_t* original_path,
   } else {
     filename.data = path.data;
     filename.len = path.len;
-  }
-
-  /* Check if filename starts with file_prefix */
-  if (filename.len < file_prefix->len ||
-      ngx_strncmp(filename.data, file_prefix->data, file_prefix->len) != 0) {
-    return NGX_DECLINED;
   }
 
   /* Create the DCB file path */

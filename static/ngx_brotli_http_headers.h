@@ -17,8 +17,7 @@ ngx_int_t check_br_accept_encoding(ngx_http_request_t* req);
 
 ngx_int_t check_dcb_accept_encoding(ngx_http_request_t* req);
 
-ngx_int_t parse_dictionary_id(ngx_http_request_t* req, ngx_str_t* file_prefix,
-                                     ngx_str_t* cache_id);
+ngx_int_t parse_dictionary_id(ngx_http_request_t* req, ngx_str_t* cache_id);
 
 ngx_int_t check_available_dictionary(ngx_http_request_t* req, ngx_str_t* expected_hash);
 

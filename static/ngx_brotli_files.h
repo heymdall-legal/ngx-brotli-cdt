@@ -19,7 +19,7 @@ ngx_int_t serve_static_file(ngx_http_request_t* req, ngx_str_t* path,
                                    ngx_flag_t auto_dictionary);
 
 ngx_int_t serve_dcb_file(ngx_http_request_t* req, ngx_str_t* original_path,
-                                ngx_str_t* file_prefix, ngx_str_t* cache_id,
+                                ngx_str_t* cache_id,
                                 ngx_flag_t auto_dictionary);
 
 #endif //NGX_BROTLI_FILES_H
